@@ -1,0 +1,115 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class PlayerMovement : MonoBehaviour
+{
+    //public float turnSpeed = 180f;
+    public float moveSpeed = 5f; // 앞뒤 움직임의 속도
+
+
+    [SerializeField]
+    private float lookSensitivity;
+
+    [SerializeField]
+    private float cameraRotationLimit;
+    private float currentCameraRotationX;
+
+    [SerializeField]
+    private Camera theCamera;
+
+
+    //private PlayerInput playerInput; // 플레이어 입력을 알려주는 컴포넌트
+    Animator m_Animator;
+    Rigidbody m_Rigidbody;
+   // Vector3 m_Movement;
+   // Quaternion m_Rotation = Quaternion.identity;
+
+    void Start()
+    {
+        m_Animator = GetComponent<Animator>();
+        m_Rigidbody = GetComponent<Rigidbody>();
+       // playerInput = GetComponent<PlayerInput>();
+    }
+
+    void Update()
+    {
+        Move();
+
+        //Rotate();
+
+
+
+        CameraRotation();       // 2️⃣ 마우스를 위아래(Y) 움직임에 따라 카메라 X 축 회전 
+        CharacterRotation();    // 3️⃣ 마우스 좌우(X) 움직임에 따라 캐릭터 Y 축 회전 
+        // float horizontal = Input.GetAxis("Horizontal");
+        // float vertical = Input.GetAxis("Vertical");
+
+        //m_Movement.Set(horizontal, 0f, vertical);
+        //m_Movement.Normalize();
+
+        // bool hasHorizontalInput = !Mathf.Approximately(horizontal, 0f);
+        // bool hasVerticalInput = !Mathf.Approximately(vertical, 0f);
+        // bool isWalking = hasHorizontalInput || hasVerticalInput;
+        //m_Animator.SetBool("IsWalking", isWalking);
+
+        //m_Animator.SetFloat("Move", move);
+
+        //Vector3 desiredForward = Vector3.RotateTowards(transform.forward, m_Movement, turnSpeed * Time.deltaTime, 0f);
+        //m_Rotation = Quaternion.LookRotation(desiredForward);
+    }
+
+ 
+
+    //void OnAnimatorMove()
+    //{
+    //    m_Rigidbody.MovePosition(m_Rigidbody.position + m_Movement * m_Animator.deltaPosition.magnitude);
+    //    m_Rigidbody.MoveRotation(m_Rotation);
+    //}
+    // 입력값에 따라 캐릭터를 앞뒤로 움직임
+    private void Move()
+    {
+
+        float _moveDirX = Input.GetAxisRaw("Horizontal");
+        float _moveDirZ = Input.GetAxisRaw("Vertical");
+        Vector3 _moveHorizontal = transform.right * _moveDirX;
+        Vector3 _moveVertical = transform.forward * _moveDirZ;
+
+        Vector3 _velocity = (_moveHorizontal + _moveVertical).normalized * moveSpeed;
+
+        m_Rigidbody.MovePosition(transform.position + _velocity * Time.deltaTime);
+        //Vector3 moveDistance = playerInput.move * transform.forward * moveSpeed * Time.deltaTime;
+
+        //m_Rigidbody.MovePosition(m_Rigidbody.position + moveDistance);
+
+
+    }
+
+
+    private void CharacterRotation()  // 좌우 캐릭터 회전
+    {
+        float _yRotation = Input.GetAxisRaw("Mouse X");
+        Vector3 _characterRotationY = new Vector3(0f, _yRotation, 0f) * lookSensitivity;
+        m_Rigidbody.MoveRotation(m_Rigidbody.rotation * Quaternion.Euler(_characterRotationY)); // 쿼터니언 * 쿼터니언
+        // Debug.Log(myRigid.rotation);  // 쿼터니언
+        // Debug.Log(myRigid.rotation.eulerAngles); // 벡터
+    }
+
+    private void CameraRotation()
+    {
+        float _xRotation = Input.GetAxisRaw("Mouse Y");
+        float _cameraRotationX = _xRotation * lookSensitivity;
+
+        currentCameraRotationX -= _cameraRotationX;
+        currentCameraRotationX = Mathf.Clamp(currentCameraRotationX, -cameraRotationLimit, cameraRotationLimit);
+
+        theCamera.transform.localEulerAngles = new Vector3(currentCameraRotationX, 0f, 0f);
+    }
+
+    // 입력값에 따라 캐릭터를 좌우로 회전
+    //private void Rotate()
+    //{
+    //    float turn = playerInput.rotate * turnSpeed * Time.deltaTime;
+    //    m_Rigidbody.rotation = m_Rigidbody.rotation * Quaternion.Euler(0, turn, 0f);
+    //}
+}
